@@ -14,10 +14,12 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",     
-      "https://slooze-frontend-assignment.vercel.app/login", 
+      "https://slooze-frontend-assignment.vercel.app",
+      "https://slooze-frontend-assignment-kfka.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 
