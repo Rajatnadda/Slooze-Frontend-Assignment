@@ -17,8 +17,11 @@ export default function Login() {
     try {
       await login(form);
     } catch (error) {
+      console.error("Login Error Details:", error);
+      console.error("API URL:", import.meta.env.VITE_API_URL);
       setErr(
         error.response?.data?.message ||
+          error.message ||
           "Login failed. Check server connection or credentials."
       );
     } finally {
