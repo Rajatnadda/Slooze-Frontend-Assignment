@@ -11,6 +11,19 @@ export default function ProductForm() {
 
   const isEditMode = Boolean(id);
 
+  const normalizedRole = user?.role?.toLowerCase().trim();
+  const canModify =
+    normalizedRole === "manager" || normalizedRole === "store-keeper";
+
+  if (!canModify) {
+    return (
+      <div className="p-8 text-center text-red-600 dark:text-red-400">
+        <h2 className="text-2xl font-bold">Access Denied</h2>
+        <p>You must be a Manager or Storekeeper to add/edit products.</p>
+      </div>
+    );
+  }
+
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -20,16 +33,6 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(isEditMode);
   const [message, setMessage] = useState(null);
-
-  // ROLE PROTECTION
-  if (user?.role !== "manager") {
-    return (
-      <div className="p-8 text-center text-red-600 dark:text-red-400">
-        <h2 className="text-2xl font-bold">Access Denied</h2>
-        <p>You must be a manager to add or edit products.</p>
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -69,9 +72,7 @@ export default function ProductForm() {
       }
 
       triggerDataRefresh();
-
       setTimeout(() => navigate("/products"), 400);
-
     } catch (err) {
       console.error(err);
       setMessage({

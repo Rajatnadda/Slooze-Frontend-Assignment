@@ -5,9 +5,24 @@ import Icon from "./Icon";
 import ThemeToggle from "./ThemeToggle";
 
 const links = [
-  { to: "/dashboard", label: "Dashboard", icon: "Dashboard", roles: ["manager"] },
-  { to: "/products", label: "Products", icon: "Products", roles: ["manager", "store-keeper"] },
-  { to: "/products/add", label: "Add Product", icon: "Add", roles: ["manager"] },
+  {
+    to: "/dashboard",
+    label: "Dashboard",
+    icon: "Dashboard",
+    roles: ["manager"],
+  },
+  {
+    to: "/products",
+    label: "Products",
+    icon: "Products",
+    roles: ["manager", "store-keeper"],
+  },
+  {
+    to: "/products/add",
+    label: "Add Product",
+    icon: "Add",
+    roles: ["manager", "store-keeper"],
+  },
 ];
 
 export default function Sidebar() {

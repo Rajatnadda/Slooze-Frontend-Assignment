@@ -4,9 +4,123 @@ import { useAuth } from "../contexts/AuthContext";
 import API from "../api/api";
 import Icon from "../components/Icon";
 
+const DeleteModal = ({
+  deleteCandidate,
+  deleteError,
+  loading,
+  onCancel,
+  onConfirm,
+}) => {
+  if (!deleteCandidate) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-sm">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+          Confirm Delete
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Are you sure you want to delete this product? This action cannot be
+          undone.
+        </p>
+        {deleteError && (
+          <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm mb-4">
+            {deleteError}
+          </div>
+        )}
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Icon name="Loading" className="animate-spin h-4 w-4" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Icon name="Delete" className="h-4 w-4" />
+                Delete
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const QuantityBadge = ({ quantity }) => {
+  const getColor = (qty) => {
+    if (qty < 10)
+      return "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400";
+    if (qty < 50)
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-400";
+    return "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400";
+  };
+
+  return (
+    <span
+      className={`px-3 py-1 text-sm font-semibold rounded-full ${getColor(
+        quantity
+      )}`}
+    >
+      {quantity}
+    </span>
+  );
+};
+const ProductRow = ({ product, isManager, isStorekeeper, onDelete }) => (
+  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+    <td className="p-4 font-medium text-gray-900 dark:text-gray-100">
+      {product.name}
+    </td>
+    <td className="p-4">
+      <QuantityBadge quantity={product.quantity} />
+    </td>
+    <td className="p-4 text-gray-900 dark:text-gray-100">
+      ₹{parseFloat(product.price).toFixed(2)}
+    </td>
+    <td className="p-4 flex gap-2 flex-wrap">
+      {(isManager || isStorekeeper) && (
+        <Link
+          to={`/products/edit/${product._id}`}
+          className="px-3 py-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-1 text-sm"
+        >
+          Edit <Icon name="Edit" className="h-4 w-4" />
+        </Link>
+      )}
+      {isManager && (
+        <button
+          onClick={() => onDelete(product._id)}
+          className="px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-md flex items-center gap-1 text-sm"
+        >
+          Delete <Icon name="Delete" className="h-4 w-4" />
+        </button>
+      )}
+      {!(isManager || isStorekeeper) && (
+        <span className="text-xs text-gray-400 italic">No actions allowed</span>
+      )}
+    </td>
+  </tr>
+);
+
 export default function Products() {
   const { user, triggerDataRefresh } = useAuth();
-  const isManager = user?.role === "manager";
+
+  const normalizedRole = user?.role?.toLowerCase().trim();
+  const isManager = normalizedRole === "manager";
+  const isStorekeeper = normalizedRole === "store-keeper";
+
+  const canEditOrAdd = isManager || isStorekeeper;
 
   const [products, setProducts] = useState([]);
   const [q, setQ] = useState("");
@@ -93,7 +207,7 @@ export default function Products() {
             onChange={(e) => setQ(e.target.value)}
           />
 
-          {isManager && (
+          {canEditOrAdd && (
             <Link
               to="/products/add"
               className="w-full sm:w-auto px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition shadow-md"
@@ -105,19 +219,48 @@ export default function Products() {
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-4 rounded-lg mb-6 flex items-center gap-3 ${
-            message.type === "success"
-              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-              : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-          }`}
-        >
-          <Icon
-            name={message.type === "success" ? "Check" : "Warning"}
-            className="h-5 w-5"
-          />
-          <p className="font-medium">{message.text}</p>
+      {deleteCandidate && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-sm">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              Confirm Delete
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Are you sure you want to delete this product? This action cannot
+              be undone.
+            </p>
+            {deleteError && (
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm mb-4">
+                {deleteError}
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteCandidate(null)}
+                disabled={loading}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={remove}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Icon name="Loading" className="animate-spin h-4 w-4" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Delete" className="h-4 w-4" />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -175,94 +318,36 @@ export default function Products() {
                   </td>
 
                   <td className="p-4 flex gap-2 flex-wrap">
-                    {isManager ? (
-                      <>
-                        <Link
-                          to={`/products/edit/${p._id}`}
-                          className="px-3 py-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-1 text-sm"
-                        >
-                          Edit <Icon name="Edit" className="h-4 w-4" />
-                        </Link>
+                    {(isManager || isStorekeeper) && (
+                      <Link
+                        to={`/products/edit/${p._id}`}
+                        className="px-3 py-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 rounded-md flex items-center gap-1 text-sm"
+                      >
+                        Edit <Icon name="Edit" className="h-4 w-4" />
+                      </Link>
+                    )}
 
-                        <button
-                          onClick={() => openDeleteModal(p._id)}
-                          className="px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-md flex items-center gap-1 text-sm"
-                        >
-                          Delete <Icon name="Delete" className="h-4 w-4" />
-                        </button>
-                      </>
-                    ) : (
-                      <span className="text-xs text-gray-400 italic dark:text-gray-600">
+                    {isManager && (
+                      <button
+                        onClick={() => openDeleteModal(p._id)}
+                        className="px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-md flex items-center gap-1 text-sm"
+                      >
+                        Delete <Icon name="Delete" className="h-4 w-4" />
+                      </button>
+                    )}
+
+                    {!canEditOrAdd && (
+                      <span className="text-xs text-gray-400 italic">
                         No actions allowed
                       </span>
                     )}
                   </td>
                 </tr>
               ))}
-
-              {filtered.length === 0 && (
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="p-8 text-center text-gray-500 dark:text-gray-400"
-                  >
-                    {q
-                      ? `No products found matching "${q}".`
-                      : "No products available."}
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         )}
       </div>
-
-      {deleteCandidate && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-xl">
-            <h3 className="text-xl font-bold text-red-600 dark:text-red-400 flex items-center gap-2 mb-4">
-              <Icon name="Alert" className="h-6 w-6" />
-              Confirm Deletion
-            </h3>
-
-            <p className="text-gray-700 dark:text-gray-300 mb-4 text-sm">
-              Are you sure you want to delete this product? This action cannot
-              be undone.
-            </p>
-
-            {deleteError && (
-              <p className="mb-3 p-2 rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm">
-                {deleteError}
-              </p>
-            )}
-
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => setDeleteCandidate(null)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={remove}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm flex items-center gap-2 disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Icon name="Loading" className="animate-spin h-4 w-4" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

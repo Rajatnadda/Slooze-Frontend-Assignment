@@ -14,8 +14,8 @@ const router = express.Router();
 
 router.get("/", protect, allowRoles("manager", "store-keeper"), getProducts);
 router.get("/:id", protect, allowRoles("manager", "store-keeper"), getProductById);
-router.post("/add", protect, allowRoles("manager"), addProduct);
-router.put("/:id", protect, allowRoles("manager"), updateProduct);
-router.delete("/:id", protect, allowRoles("manager"), deleteProduct);
+router.post("/add", protect, allowRoles("manager", "store-keeper"), addProduct);
+router.put("/:id", protect, allowRoles("manager", "store-keeper"), updateProduct);
+router.delete("/:id", protect, allowRoles("manager", "store-keeper"), deleteProduct);
 
 export default router;
