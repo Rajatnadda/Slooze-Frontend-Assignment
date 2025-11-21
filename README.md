@@ -2,8 +2,8 @@
 A full-stack inventory management application built using React, TailwindCSS, Context API, and a Node.js/Express API.
 It includes authentication, role-based access, product management, and a clean light/dark theme toggle.
 
-🚀 Features
-🔐 Authentication & Authorization
+ Features
+ Authentication & Authorization
 
 Login & Register with JWT authentication.
 
@@ -124,6 +124,7 @@ Frontend/
 	│  └─ api/
 	└─ .env
 ```
+
 
 
 
