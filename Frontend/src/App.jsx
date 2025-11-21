@@ -20,17 +20,19 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      <Route element={<ProtectedRoute roles={["manager", "store-keeper"]} />}>
+      <Route
+        element={<ProtectedRoute roles={["manager", "store_keeper"]} />}
+      >
         <Route element={<Layout />}>
           <Route path="/products" element={<Products />} />
+          <Route path="/products/add" element={<ProductForm />} />
+          <Route path="/products/edit/:id" element={<ProductForm />} />
         </Route>
       </Route>
 
       <Route element={<ProtectedRoute roles={["manager"]} />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/products/add" element={<ProductForm />} />
-          <Route path="/products/edit/:id" element={<ProductForm />} />
         </Route>
       </Route>
 
